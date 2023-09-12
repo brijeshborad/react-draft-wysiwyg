@@ -13,11 +13,36 @@ class LayoutComponent extends Component {
     expanded: PropTypes.bool,
     onExpandEvent: PropTypes.func,
     onChange: PropTypes.func,
+    doCollapse: PropTypes.func,
     config: PropTypes.object,
     translations: PropTypes.object,
   };
 
-  onChange: Function = (event: Object): void => {
+  constructor(props) {
+    super(props);
+    this.emojiRef = React.createRef();
+  }
+
+  componentDidMount() {
+    // Attach a click event listener to the document
+    document.addEventListener('mousedown', this.handleClickOutside);
+    document.addEventListener('keydown', this.handleClickOutside);
+  }
+
+  componentWillUnmount() {
+    // Remove the click event listener when the component is unmounted
+    document.removeEventListener('mousedown', this.handleClickOutside);
+    document.removeEventListener('keydown', this.handleClickOutside);
+  }
+
+  handleClickOutside = (e) => {
+    // Check if the clicked element is outside of the component's DOM element
+    if (this.emojiRef.current && !this.emojiRef.current.contains(e.target)) {
+      this.props.doCollapse();
+    }
+  };
+
+  onChange = (event: Object) => {
     const { onChange } = this.props;
     onChange(event.target.innerHTML);
   };
@@ -49,7 +74,7 @@ class LayoutComponent extends Component {
       translations,
     } = this.props;
     return (
-      <div
+      <div ref={this.emojiRef}
         className="rdw-emoji-wrapper"
         aria-haspopup="true"
         aria-label="rdw-emoji-control"
